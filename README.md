@@ -1,4 +1,6 @@
-# tstack
+# fwd-stack
+
+Our fork of [tstack](https://github.com/t3dotgg/tstack).
 
 The agent skills I use every day, cleaned up so anyone can use them. They work
 in Claude Code and Codex. Some use [T3 Code](https://github.com/pingdotgg/t3code)
@@ -32,9 +34,9 @@ Some skills call others. Install the ones they need too:
 ## Install
 
 ```bash
-git clone https://github.com/t3dotgg/tstack
-cp -R tstack/skills/* ~/.claude/skills/   # Claude Code
-cp -R tstack/skills/* ~/.codex/skills/    # Codex
+git clone https://github.com/flyweightdev/fwd-stack
+cp -R fwd-stack/skills/* ~/.claude/skills/   # Claude Code
+cp -R fwd-stack/skills/* ~/.codex/skills/    # Codex
 ```
 
 ## Requirements
@@ -51,20 +53,27 @@ These are starting points. Edit them. Put personal settings, like which models
 sit on your council, in your `CLAUDE.md` or `AGENTS.md`, so you can update the
 skills without losing them.
 
-## Local copy
+## Fork
 
-This clone is pull-only. Pushing to `origin` is disabled with:
+Push to `origin` (`flyweightdev/fwd-stack`). Never push to the original tstack.
+We only pull from it, as `upstream`.
 
-```sh
-git remote set-url --push origin no_push
-```
-
-Local changes are committed on `main`. To pull updates and replay your commits
-on top of them:
+Set this up once in each clone. Git does not copy it with the repo:
 
 ```sh
-git pull --rebase
+git remote add upstream https://github.com/t3dotgg/tstack
+git remote set-url --push upstream no_push
+gh repo set-default flyweightdev/fwd-stack
 ```
+
+To pull updates from tstack:
+
+```sh
+git pull --no-rebase upstream main
+git push origin main
+```
+
+Merge rather than rebase, so `main` never needs a force-push.
 
 ## License
 

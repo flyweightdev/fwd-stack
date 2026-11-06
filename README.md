@@ -13,6 +13,8 @@ not.
 | `full-stop` | "full stop" | Same as `full-send`, but stops when the PR is ready for you to merge. |
 | `council` | "council" | Gets review from two models, Claude and Codex, and loops until they agree. |
 | `sol-loop` | "sol loop" | Reviews a change with GPT Sol in a loop until both agents agree. |
+| `sol-review` | "sol review" | Gets one read-only review from GPT Sol and reports the findings, without fixing them. |
+| `show-proof` | (automatic) | Takes a screenshot of visible changes, checks it, and shows it when the task is done. |
 | `file-pr` | "file a PR" | Files a short PR that leads with the problem, not an inventory of changes. |
 | `takeover` | "take over" | Finishes someone else's PR, branch, or agent thread, and keeps their credit. |
 | `babysit-pr` | "babysit" | Watches a PR through CI and review bots, and fixes the real findings. |
@@ -23,6 +25,7 @@ Some skills call others. Install the ones they need too:
 
 - `full-send` uses `sol-loop`, `file-pr`, and `babysit-pr`.
 - `full-stop` uses `full-send`.
+- `sol-review` uses `sol-loop`, and `leaving-pr-comments` when asked to post.
 - `takeover` uses `modernize`, `file-pr`, `babysit-pr`, and `leaving-pr-comments`.
 - `file-pr`, `babysit-pr`, and `modernize` use `leaving-pr-comments`.
 
@@ -38,9 +41,9 @@ cp -R tstack/skills/* ~/.codex/skills/    # Codex
 
 - An authenticated [GitHub CLI](https://cli.github.com) (`gh`).
 - `python3` for `babysit-pr`'s `pr-wait` script.
-- `council` and `sol-loop` need subagents on other providers' models. T3 Code
-  does this with `delegate_task`. Otherwise you need a harness that can run
-  those models.
+- `council`, `sol-loop`, and `sol-review` need subagents on other providers'
+  models. T3 Code does this with `delegate_task`. Otherwise you need a harness
+  that can run those models.
 
 ## Make them yours
 

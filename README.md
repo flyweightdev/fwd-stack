@@ -56,14 +56,11 @@ This clone is pull-only. Pushing to `origin` is disabled with:
 git remote set-url --push origin no_push
 ```
 
-Keep `main` as a clean copy of `origin/main`, and keep your changes on a local
-branch. To pull updates:
+Local changes are committed on `main`. To pull updates and replay your commits
+on top of them:
 
 ```sh
-git switch main
-git pull --ff-only
-git switch <your-branch>
-git rebase main
+git pull --rebase
 ```
 
 ## License

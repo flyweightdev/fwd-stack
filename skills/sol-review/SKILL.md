@@ -1,13 +1,13 @@
 ---
 name: sol-review
-description: Use when the user asks for a review with Sol, or says "sol review". One read-only review pass. For a review and fix loop, use sol-loop.
+description: Use when the user asks for a review with Sol, or says "sol review". Sol reviews once and findings go on the PR as inline comments. Changes no code. To fix findings, use sol-loop.
 ---
 
 # sol-review
 
-Get one independent review of the current change from GPT Sol, then report the
-findings. This does not change code. If the user wants the findings fixed, they
-will say so, or they can ask for `sol-loop`.
+Get one independent review of the current change from GPT Sol. Post the
+findings as inline comments if there is a PR, then report them. This never
+changes code.
 
 ## 1. Scope
 
@@ -62,11 +62,50 @@ File: <path>:<line>
 
 Do not edit scoped files while the review runs.
 
-## 3. Report
+## 3. Check findings
 
-Check each finding against the code yourself. Keep every finding in the list.
-If you think one is wrong, add a line that says why, with evidence. Do not
-drop it silently, and do not fix anything.
+Check each finding against the code yourself. Keep every finding in your
+report. If you think one is wrong, add a line that says why, with evidence.
+
+Do not change code, even when the fix is obvious. For fixes, the user can ask
+for `sol-loop`.
+
+## 4. Comment on the PR
+
+Use the PR the user named, or `gh pr view --json number,url,headRefOid` for the
+current branch. If there is no PR, skip this step.
+
+Post one GitHub review with one inline comment per finding:
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<n>/reviews --method POST --input <file>
+```
+
+```json
+{
+  "commit_id": "<headRefOid>",
+  "event": "COMMENT",
+  "body": "<verdict and finding count>",
+  "comments": [
+    { "path": "src/ui/Input.tsx", "line": 42, "side": "RIGHT", "body": "<finding>" }
+  ]
+}
+```
+
+- Always use `COMMENT`. Never approve or request changes.
+- Follow `leaving-pr-comments` for every comment and the review body. Name Sol's
+  model as the author.
+- Do not post findings you showed to be wrong, or issues that already have a
+  comment on the PR. List them in your report.
+- Findings in uncommitted or unpushed code cannot be anchored. Report them, and
+  say they were not posted.
+- If a finding is on a line outside the PR diff, put it in the review body with
+  its file and line.
+- If there are no findings to post, post nothing.
+
+Verify that GitHub returned the review URL.
+
+## 5. Report
 
 Use this format, with the most severe finding first:
 
@@ -78,6 +117,5 @@ An empty field on first load reaches `parse()`, which throws.
 File: src/ui/Input.tsx:42
 ```
 
-End with the verdict, the model, and the base you reviewed. If there are no
-findings, say that in one line. Keep the findings in your reply. Post to GitHub
-only if the user asks, and then use `leaving-pr-comments`.
+End with the verdict, the model, the base you reviewed, and the review URL or
+why nothing was posted. If there are no findings, say that in one line.

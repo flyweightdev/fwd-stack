@@ -6,19 +6,25 @@ description: Use when the user says "sol loop".
 # sol-loop
 
 This is a workflow for making your code changes more correct before (or
-sometimes after) filing a pull request. tl;dr - use OpenAI's GPT Sol to review
-your code in a loop.
+sometimes after) filing a pull request. tl;dr - Sol reviews, Claude fixes, and
+they loop until Sol finds no more errors.
 
 Make the most minimal possible changes to appease the Sol reviewers. Be careful
 of scope creep and don't be scared to push back.
 
+## Roles
+
+- Sol reviews every round and never edits code.
+- Claude makes every code change. If this thread runs on Claude, make the
+  changes yourself. Otherwise, in T3, delegate them as described in step 3.
+  This replaces T3's default of fixing small findings yourself.
+- If no route runs Claude, report the blocker. Do not fix with another model.
+
 ## Budget
 
-- Default: 3 rounds total. Round 1 is full. Later rounds check only
-  changed code and open findings.
-- Extend to 5 only for security, permissions, auth, data loss, or
-  state/concurrency, while a blocker or should stays open with evidence. Or when
-  the user asks.
+- Loop until Sol approves with no blocker or should open. Round 1 is full.
+  Later rounds check only changed code and open findings.
+- Safety stop: 10 rounds, unless the user asks for more.
 - Stop early if a round returns only nits. Declined nits and comment,
   doc, or format-only fixes need no new round.
 - One reviewer only. Sol must not start subagents or reviewers.
@@ -77,24 +83,37 @@ VERDICT: APPROVE or CHANGES
 S1 [blocker|should|nit] <file>:<line> <claim>. Fix: <suggestion> (stable ids)
 ```
 
-## 3. Answer findings
+## 3. Claude fixes
 
-Check each finding and severity yourself. Another path, rare case, or
-small cost is a nit, whatever label it came with.
+Send all open findings from the round to Claude in one pass. If this thread
+runs on Claude, follow the brief yourself. Otherwise, in T3, start a new
+`delegate_task` each round (`role: "implementation"`, `isolation: "shared"`).
+Use the Claude model the user selected in T3, or the latest Claude Opus from
+`orchestrator_capabilities` if you cannot tell. Wait for it to finish.
 
-- Agree: smallest fix. Prefer delete or narrow over new lock, cache,
-  helper, or option. Fix the case that happened. Add one focused test
-  that fails without the fix, if intent needs it.
-- Disagree: say why, with evidence (file:line, test, output).
-- Out of scope or nit: decline in one line. List as follow-up.
+```
+Repo: <abs path> Base: <sha> Intent: <intent> Out of scope: <scope>
+Sol findings: <open findings> Ledger so far: <ledger>
+Check each finding and severity against the code. Sol can be wrong. Another
+path, rare case, or small cost is a nit, whatever label it came with.
+Agree: smallest fix. Prefer delete or narrow over new lock, cache, helper, or
+option. Fix the case that happened. Add one focused test that fails without
+the fix, if intent needs it.
+Disagree: say why, with evidence (file:line, test, output).
+Out of scope or nit: decline in one line, list as follow-up.
+Touch nothing else. Do not commit, push, comment on PRs, or start subagents.
+Run covering checks. Do not agree just to end the loop.
+Reply per finding: <id> fixed | disagree: <evidence> | declined: <reason>,
+then check results.
+```
 
-Update the ledger. Re-run checks and `git diff --shortstat <base>`. If
-review grew the diff, cut first. Do not agree just to end the loop.
+Update the ledger. Re-run checks and `git diff --shortstat <base>`. If review
+grew the diff, have Claude cut first.
 
 ## 4. Next round
 
-Start one only if budget remains and a blocker or should is open, behavior code
-changed, or approval does not cover the current behavior diff. Use a fresh
+Start one if a blocker or should is open, behavior code changed, or approval
+does not cover the current behavior diff. Use a fresh
 `delegate_task` in T3, or follow up the saved native ID. Send the round 1 brief,
 the ledger (`fixed:` / `disagree:` / `declined:` + evidence), the same base
 diff, and the change since last round. Tell Sol: open ids and changed code only.
@@ -104,16 +123,16 @@ Mark each old id `resolved` or `still open: <reason>`.
 
 Agreed: APPROVE on the current behavior diff, no blocker or should open,
 no concern of your own. Stuck: an item stays disputed after two replies,
-or budget ends. Show both sides in 2-3 lines each. The user decides.
-Budget end is not approval.
+or the safety stop is reached. Show both sides in 2-3 lines each. The user
+decides. The safety stop is not approval.
 
 Do not push during the loop. Push after agreement only if the user asked
 to push, ship, or update the PR. If you push to a PR, add above the model
 blurb:
 
-`Reviewed with sol-loop: <N> rounds with <model>. Sol verdict: approved`.
+`Reviewed with sol-loop: <N> rounds with <model>, fixes by <Claude model>. Sol verdict: approved`.
 
 Add `on <effort>` only if verified.
 
-Report: rounds, model, what Sol changed, diff size before/after, fixed and
+Report: rounds, both models, what the loop changed, diff size before/after, fixed and
 declined findings with reasons, usage if exposed (else say not), pushed or not.

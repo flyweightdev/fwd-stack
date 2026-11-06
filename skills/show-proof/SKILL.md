@@ -19,9 +19,12 @@ to have one.
    is one. Stop anything you started.
 2. Get to the state the task changed, with realistic data. A page that only
    shows a spinner or an empty state proves nothing.
-3. Capture it with what you have: the harness's browser tools, then Playwright
-   or Puppeteer if the repo has them, then a simulator
-   (`xcrun simctl io booted screenshot <path>`).
+3. Capture it. In T3, use a headless browser such as Playwright or Puppeteer.
+   Do not use `preview_*` for this unless the user asked for browser work. For
+   a simulator or emulator, use `device_list`, `device_open`, and
+   `device_screenshot`, not `xcrun simctl`. Outside T3, use the harness's
+   browser tools, Playwright, Puppeteer, or
+   `xcrun simctl io booted screenshot <path>`.
 4. Capture each state the task touched, and only those. For a bug fix, show
    before and after if you can. If the task touched a responsive layout, add a
    mobile width.
@@ -41,8 +44,18 @@ looked at.
 
 ## Show it
 
+In T3, show the images in the thread. A path alone does not show them:
+
+1. Write a small self-contained HTML page with one `<img>` per image, using its
+   absolute path, and a short caption. T3 inlines local images.
+2. Pass it to `html_preview`. Fix anything in `missingImages`.
+3. Pass it to `html_render` with the `contentHeight` from `html_preview`. Do not
+   start a server for it.
+
+Outside T3, show the images if the harness can display them.
+
 In your final message, give each image's absolute path and one line on what it
-shows. If the harness can display images, show them there too.
+shows.
 
 If you could not capture it, say so and say why. Never say a visual change
 works when you have not seen it.

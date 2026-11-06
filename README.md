@@ -48,6 +48,24 @@ These are starting points. Edit them. Put personal settings, like which models
 sit on your council, in your `CLAUDE.md` or `AGENTS.md`, so you can update the
 skills without losing them.
 
+## Local copy
+
+This clone is pull-only. Pushing to `origin` is disabled with:
+
+```sh
+git remote set-url --push origin no_push
+```
+
+Keep `main` as a clean copy of `origin/main`, and keep your changes on a local
+branch. To pull updates:
+
+```sh
+git switch main
+git pull --ff-only
+git switch <your-branch>
+git rebase main
+```
+
 ## License
 
 [MIT](LICENSE)

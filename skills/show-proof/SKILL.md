@@ -32,8 +32,17 @@ to have one.
 If a project file says to ask before browser automation, running the app, or
 screenshots, ask first. `full-send` and `full-stop` already grant this.
 
-Save images outside the tracked tree, in a temp directory or a gitignored
-folder. Never commit them unless the user asks.
+Save images in `.context/screenshots/` in the worktree or checkout, so they go
+away with the worktree. First make sure git ignores the folder, or it blocks
+worktree removal:
+
+```sh
+git check-ignore -q .context ||
+  echo ".context/" >> "$(git rev-parse --git-common-dir)/info/exclude"
+```
+
+Outside a git repo, such as a T3 thread with no project, save them in the
+thread's folder. Never commit images unless the user asks.
 
 ## Look at it
 

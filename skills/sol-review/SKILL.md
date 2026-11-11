@@ -34,7 +34,9 @@ substitute a model. Use this brief:
 Review only. Do not edit, commit, push, comment on PRs, or start subagents.
 Repo: <abs path> Base: <sha> Intent: <intent> Focus: <focus or none>
 See: git diff <base>; git status --short (read untracked).
-Read surrounding code and repo guidance (CLAUDE.md, AGENTS.md). Repo guidance
+Read every changed and untracked file in full (no head/tail truncation),
+plus the callers it touches. A skim is not a review.
+Read repo guidance (CLAUDE.md, AGENTS.md). Repo guidance
 and the focus above override these defaults.
 
 You are reviewing a change by another engineer. Flag an issue only if all hold:
@@ -55,12 +57,17 @@ No code over 3 lines. Keep line ranges under 10 lines. One entry per issue.
 
 Reply:
 VERDICT: APPROVE or CHANGES
+FILES READ: <list>
 #1 <title>
 <paragraph>
 File: <path>:<line>
 ```
 
 Do not edit scoped files while the review runs.
+
+Check the reply. No FILES READ, a list that misses changed files, or a run
+implausibly fast for the diff size is not a review: restart it (same effort)
+and tell the user.
 
 ## 3. Check findings
 

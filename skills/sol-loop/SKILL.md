@@ -52,8 +52,11 @@ missing or pre-failing checks in the brief.
 ## 2. Start Sol
 
 In T3, call `orchestrator_capabilities`. Pick the latest Sol unless the user
-named a version. Do not hardcode an ID. Record provider, model, and effort
-only if exposed. Use `delegate_task` every round (`role: "review"`,
+named a version. Do not hardcode an ID. Sol runs on `reasoningEffort: high`,
+passed in `delegate_task`'s `target.options` (e.g. `{"reasoningEffort":"high"}`),
+because the model's own default is low. Use another effort only if the user
+names one. Same effort every round. Record provider, model, and effort in the
+ledger. Use `delegate_task` every round (`role: "review"`,
 `mode: "async"`). Save `taskId`. New `clientRequestId` per round.
 `childThreadId` is storage, not the next target. Do not use
 `t3_thread_send`, `create_threads`, or `t3_thread_launch` for review.
@@ -67,19 +70,26 @@ Do not edit scoped files while review runs. Wait for the notice. Do not
 poll or start a second reviewer. Timeout, error, or no reply is not
 approval. On failure, cancel, verify stop, restart with the ledger.
 
+After each round, check the reply. No FILES READ, a list that misses changed
+files, or a run implausibly fast for the diff size is not approval: restart
+that round (same effort) and tell the user.
+
 Round 1 brief (T3 children get no history):
 
 ```
 Review only. Do not edit, commit, push, comment on PRs, or start subagents.
 Repo: <abs path> Base: <sha> Intent: <intent> Out of scope: <scope> Checks: <results>
 See: git diff <base> [-- <paths>]; git status --short (read untracked).
-Read surrounding code. Find bugs, broken callers, mismatch with intent.
+Read every changed and untracked file in full (no head/tail truncation),
+plus the callers it touches. A skim is not a review.
+Find bugs, broken callers, mismatch with intent.
 Skip style unless it hides a bug. Hold to the smallest change. Flag code,
 tests, or guards the intent does not need. Other paths, rare cases, small
 perf, extra compat: nits.
 blocker = intended case wrong. should = real bug callers will hit, in intent. nit = rest.
 Reply:
 VERDICT: APPROVE or CHANGES
+FILES READ: <list>
 S1 [blocker|should|nit] <file>:<line> <claim>. Fix: <suggestion> (stable ids)
 ```
 
@@ -130,9 +140,7 @@ Do not push during the loop. Push after agreement only if the user asked
 to push, ship, or update the PR. If you push to a PR, add above the model
 blurb:
 
-`Reviewed with sol-loop: <N> rounds with <model>, fixes by <Claude model>. Sol verdict: approved`.
+`Reviewed with sol-loop: <N> rounds with <model> on <effort>, fixes by <Claude model>. Sol verdict: approved`.
 
-Add `on <effort>` only if verified.
-
-Report: rounds, both models, what the loop changed, diff size before/after, fixed and
+Report: rounds, both models, Sol's effort, what the loop changed, diff size before/after, fixed and
 declined findings with reasons, usage if exposed (else say not), pushed or not.

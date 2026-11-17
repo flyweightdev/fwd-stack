@@ -24,10 +24,11 @@ named, such as security or migrations.
 
 ## 2. Start Sol
 
-Use GPT 6.1 Sol (`gpt-6.1-sol`) at high reasoning effort, unless the user names
-another version. Start one reviewer as described in "Start Sol" in
-[sol-loop](../sol-loop/SKILL.md), which covers the T3 and native routes,
-waiting, and failures. If no route runs this model, report the blocker. Do not
+Use the latest GPT Sol at high reasoning effort, unless the user names another
+version. Do not hardcode a model ID: pick the newest Sol the route offers (in
+T3, from `orchestrator_capabilities`). Start one reviewer as described in
+"Start Sol" in [sol-loop](../sol-loop/SKILL.md), which covers the T3 and native
+routes, waiting, and failures. If no route runs Sol, report the blocker. Do not
 substitute a model. Use this brief:
 
 ```
